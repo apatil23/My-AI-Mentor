@@ -1,1 +1,2 @@
-name,email,password,experience_level,age_group,interests,skills,time_commitment,learning_style,short_term_goals,long_term_goals,created_at,updated_at
+name,email,password,experience_level,age_group,interests,skills,time_commitment,learning_style,short_term_goals,long_term_goals,created_at,updated_at,goals
+Yash Mishra,yrmishra1904@gmial.com,602681d3ecdef2077716f8da9dfe34693b81f25c00f54fc9f9fed53658afa727,Beginner,,,,,,,,2025-09-04 20:37:20,,

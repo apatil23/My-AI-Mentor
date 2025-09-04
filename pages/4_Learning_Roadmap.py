@@ -77,10 +77,21 @@ with st.form("roadmap_form"):
             timeline = custom_timeline if custom_timeline else "3 months"
     
     with col2:
+        # Handle experience_level safely
+        experience_level_data = user_data.get('experience_level', 'Beginner')
+        if pd.isna(experience_level_data) or not isinstance(experience_level_data, str):
+            experience_level_data = 'Beginner'
+        
+        level_options = ["Beginner", "Intermediate", "Advanced"]
+        try:
+            level_index = level_options.index(experience_level_data)
+        except ValueError:
+            level_index = 0
+        
         difficulty_level = st.selectbox(
             "Difficulty Level",
-            ["Beginner", "Intermediate", "Advanced"],
-            index=["Beginner", "Intermediate", "Advanced"].index(user_data.get('experience_level', 'Beginner'))
+            level_options,
+            index=level_index
         )
         
         focus_areas = st.multiselect(
@@ -99,27 +110,48 @@ with st.form("roadmap_form"):
                 "Soft Skills",
                 "Industry Knowledge"
             ],
-            default=["Programming Fundamentals"] if user_data.get('experience_level') == 'Beginner' else []
+            default=["Programming Fundamentals"] if experience_level_data == 'Beginner' else []
         )
+        
+        # Handle learning_style safely
+        learning_style_data = user_data.get('learning_style', '')
+        if pd.isna(learning_style_data) or not isinstance(learning_style_data, str):
+            learning_style_data = ''
         
         learning_style = st.selectbox(
             "Preferred Learning Style",
             ["Hands-on projects", "Theory then practice", "Mixed approach", "Video-based", "Reading-intensive"],
-            index=0 if user_data.get('learning_style', '').startswith('Hands-on') else 2
+            index=0 if learning_style_data.startswith('Hands-on') else 2
         )
+    
+    # Handle time_commitment safely
+    time_commitment_data = user_data.get('time_commitment', '1-3 hours')
+    if pd.isna(time_commitment_data) or not isinstance(time_commitment_data, str):
+        time_commitment_data = '1-3 hours'
+    
+    # Map old values to new ones
+    time_commitment_data = time_commitment_data.replace('25+ hours', '16+ hours')
+    
+    time_options = ["1-3 hours", "4-7 hours", "8-15 hours", "16+ hours"]
+    try:
+        time_index = time_options.index(time_commitment_data)
+    except ValueError:
+        time_index = 0
     
     time_per_week = st.selectbox(
         "Time commitment per week",
-        ["1-3 hours", "4-7 hours", "8-15 hours", "16+ hours"],
-        index=0 if not user_data.get('time_commitment') else 
-        ["1-3 hours", "4-7 hours", "8-15 hours", "16+ hours"].index(
-            user_data.get('time_commitment', '1-3 hours').replace('25+ hours', '16+ hours')
-        )
+        time_options,
+        index=time_index
     )
+    
+    # Handle skills data safely
+    skills_data = user_data.get('skills', '')
+    if pd.isna(skills_data) or not isinstance(skills_data, str):
+        skills_data = ''
     
     prior_knowledge = st.text_area(
         "Current Knowledge & Skills",
-        value=user_data.get('skills', ''),
+        value=skills_data,
         placeholder="What do you already know that's relevant to this goal?"
     )
     
@@ -153,10 +185,14 @@ if generate_roadmap_btn:
                 st.session_state.current_roadmap = roadmap
                 
                 # Save roadmap to CSV
+                # Safe goal handling
+                safe_goal = goal if goal and isinstance(goal, str) else 'Learning Goal'
+                goal_title = safe_goal[:50] if len(safe_goal) > 50 else safe_goal
+                
                 roadmap_record = {
                     'user_email': user_data['email'],
-                    'title': roadmap.get('title', goal[:50]) if roadmap and isinstance(roadmap, dict) else goal[:50],
-                    'goal': goal,
+                    'title': roadmap.get('title', goal_title) if roadmap and isinstance(roadmap, dict) else goal_title,
+                    'goal': safe_goal,
                     'timeline': timeline,
                     'difficulty_level': difficulty_level,
                     'content': str(roadmap) if roadmap else '',

@@ -36,11 +36,15 @@ with st.form("profile_form"):
     
     with col2:
         email = st.text_input("Email", value=user_data.get('email', ''), disabled=True)
+        # Handle age_group with proper NaN checking
+        current_age_group = user_data.get('age_group', 'Under 18')
+        if pd.isna(current_age_group) or current_age_group == '' or current_age_group not in ["Under 18", "18-25", "26-35", "36-50", "50+"]:
+            current_age_group = 'Under 18'
+        
         age_group = st.selectbox(
             "Age Group",
             ["Under 18", "18-25", "26-35", "36-50", "50+"],
-            index=0 if not user_data.get('age_group') else 
-            ["Under 18", "18-25", "26-35", "36-50", "50+"].index(user_data.get('age_group', 'Under 18'))
+            index=["Under 18", "18-25", "26-35", "36-50", "50+"].index(current_age_group)
         )
     
     st.header("🎯 Interests & Skills")
@@ -101,18 +105,28 @@ with st.form("profile_form"):
     # Learning Goals
     st.header("🎯 Learning Goals")
     
+    # Handle time_commitment with proper checking
+    current_time_commitment = user_data.get('time_commitment', '1-3 hours')
+    time_options = ["1-3 hours", "4-7 hours", "8-15 hours", "16-25 hours", "25+ hours"]
+    if pd.isna(current_time_commitment) or current_time_commitment == '' or current_time_commitment not in time_options:
+        current_time_commitment = '1-3 hours'
+    
     time_commitment = st.selectbox(
         "How much time can you dedicate to learning per week?",
-        ["1-3 hours", "4-7 hours", "8-15 hours", "16-25 hours", "25+ hours"],
-        index=0 if not user_data.get('time_commitment') else 
-        ["1-3 hours", "4-7 hours", "8-15 hours", "16-25 hours", "25+ hours"].index(user_data.get('time_commitment', '1-3 hours'))
+        time_options,
+        index=time_options.index(current_time_commitment)
     )
+    
+    # Handle learning_style with proper checking
+    current_learning_style = user_data.get('learning_style', 'Mixed approach')
+    style_options = ["Visual (videos, diagrams)", "Reading (articles, documentation)", "Hands-on (projects, coding)", "Audio (podcasts, lectures)", "Mixed approach"]
+    if pd.isna(current_learning_style) or current_learning_style == '' or current_learning_style not in style_options:
+        current_learning_style = 'Mixed approach'
     
     learning_style = st.selectbox(
         "Preferred Learning Style",
-        ["Visual (videos, diagrams)", "Reading (articles, documentation)", "Hands-on (projects, coding)", "Audio (podcasts, lectures)", "Mixed approach"],
-        index=0 if not user_data.get('learning_style') else 
-        ["Visual (videos, diagrams)", "Reading (articles, documentation)", "Hands-on (projects, coding)", "Audio (podcasts, lectures)", "Mixed approach"].index(user_data.get('learning_style', 'Mixed approach'))
+        style_options,
+        index=style_options.index(current_learning_style)
     )
     
     short_term_goals = st.text_area(

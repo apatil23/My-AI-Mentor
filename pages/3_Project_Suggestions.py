@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from utils.auth import init_session_state, require_auth, is_authenticated
 from utils.gemini_client import generate_project_suggestions
 from utils.data_manager import save_user_interaction
@@ -21,13 +22,33 @@ user_data = st.session_state.user_data
 with st.expander("📋 Your Profile Summary", expanded=False):
     col1, col2 = st.columns(2)
     with col1:
-        st.write(f"**Experience Level:** {user_data.get('experience_level', 'Not set')}")
-        st.write(f"**Time Commitment:** {user_data.get('time_commitment', 'Not set')}")
-        st.write(f"**Learning Style:** {user_data.get('learning_style', 'Not set')}")
+        # Handle all profile data with proper validation
+        experience_level = user_data.get('experience_level', 'Not set')
+        if pd.isna(experience_level) or not isinstance(experience_level, str):
+            experience_level = 'Not set'
+        
+        time_commitment = user_data.get('time_commitment', 'Not set')
+        if pd.isna(time_commitment) or not isinstance(time_commitment, str):
+            time_commitment = 'Not set'
+        
+        learning_style = user_data.get('learning_style', 'Not set')
+        if pd.isna(learning_style) or not isinstance(learning_style, str):
+            learning_style = 'Not set'
+        
+        st.write(f"**Experience Level:** {experience_level}")
+        st.write(f"**Time Commitment:** {time_commitment}")
+        st.write(f"**Learning Style:** {learning_style}")
     
     with col2:
+        # Handle interests and skills with proper data validation
         interests = user_data.get('interests', 'Not set')
+        if pd.isna(interests) or not isinstance(interests, str):
+            interests = 'Not set'
+        
         skills = user_data.get('skills', 'Not set')
+        if pd.isna(skills) or not isinstance(skills, str):
+            skills = 'Not set'
+        
         st.write(f"**Interests:** {interests[:100]}{'...' if len(interests) > 100 else ''}")
         st.write(f"**Skills:** {skills[:100]}{'...' if len(skills) > 100 else ''}")
 

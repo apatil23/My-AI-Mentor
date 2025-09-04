@@ -64,7 +64,13 @@ def init_data_files():
 def load_users() -> pd.DataFrame:
     """Load users from CSV file."""
     try:
-        return pd.read_csv(USERS_FILE)
+        df = pd.read_csv(USERS_FILE)
+        # Ensure all string columns don't have NaN values
+        string_columns = ['name', 'email', 'experience_level', 'age_group', 'interests', 'skills', 'learning_style', 'short_term_goals', 'long_term_goals']
+        for col in string_columns:
+            if col in df.columns:
+                df[col] = df[col].fillna('')
+        return df
     except (FileNotFoundError, pd.errors.EmptyDataError):
         return pd.DataFrame()
 
@@ -125,6 +131,11 @@ def save_roadmap(roadmap_data: Dict[str, Any]) -> int:
         roadmap_data['created_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         roadmap_data['updated_at'] = roadmap_data['created_at']
         
+        # Ensure all string fields are properly set
+        for key in ['title', 'content', 'goal']:
+            if key not in roadmap_data or pd.isna(roadmap_data[key]):
+                roadmap_data[key] = ''
+        
         # Create new roadmap record
         new_roadmap = pd.DataFrame([roadmap_data])
         
@@ -146,6 +157,12 @@ def load_user_roadmaps(user_email: str) -> pd.DataFrame:
         
         if roadmaps_df.empty:
             return pd.DataFrame()
+        
+        # Ensure string columns don't have NaN values
+        string_columns = ['title', 'content', 'goal']
+        for col in string_columns:
+            if col in roadmaps_df.columns:
+                roadmaps_df[col] = roadmaps_df[col].fillna('')
         
         return roadmaps_df[roadmaps_df['user_email'] == user_email]
     
@@ -183,6 +200,12 @@ def load_user_interactions(user_email: str) -> pd.DataFrame:
         
         if interactions_df.empty:
             return pd.DataFrame()
+        
+        # Ensure string columns don't have NaN values
+        string_columns = ['interaction_type', 'details']
+        for col in string_columns:
+            if col in interactions_df.columns:
+                interactions_df[col] = interactions_df[col].fillna('')
         
         return interactions_df[interactions_df['user_email'] == user_email]
     
@@ -222,6 +245,12 @@ def load_chat_history(user_email: str) -> pd.DataFrame:
         if chat_df.empty:
             return pd.DataFrame()
         
+        # Ensure string columns don't have NaN values
+        string_columns = ['role', 'content']
+        for col in string_columns:
+            if col in chat_df.columns:
+                chat_df[col] = chat_df[col].fillna('')
+        
         return chat_df[chat_df['user_email'] == user_email]
     
     except Exception as e:
@@ -259,6 +288,12 @@ def load_progress_entries(user_email: str) -> pd.DataFrame:
         
         if progress_df.empty:
             return pd.DataFrame()
+        
+        # Ensure string columns don't have NaN values
+        string_columns = ['progress_type', 'details', 'time_spent']
+        for col in string_columns:
+            if col in progress_df.columns:
+                progress_df[col] = progress_df[col].fillna('')
         
         user_progress = progress_df[progress_df['user_email'] == user_email]
         if not user_progress.empty and len(user_progress) > 0:

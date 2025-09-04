@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from utils.auth import init_session_state, require_auth, is_authenticated
 from utils.gemini_client import generate_learning_roadmap
 from utils.data_manager import save_roadmap, load_user_roadmaps

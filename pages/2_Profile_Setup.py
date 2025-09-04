@@ -59,7 +59,11 @@ with st.form("profile_form"):
         "Physics", "Chemistry", "Biology", "Psychology", "History", "Philosophy"
     ]
     
-    current_interests = user_data.get('interests', '').split(',') if user_data.get('interests') else []
+    # Handle interests with proper data validation
+    interests_data = user_data.get('interests', '')
+    if pd.isna(interests_data) or not isinstance(interests_data, str):
+        interests_data = ''
+    current_interests = interests_data.split(',') if interests_data else []
     current_interests = [i.strip() for i in current_interests if i.strip()]
     
     selected_interests = st.multiselect(
@@ -83,7 +87,11 @@ with st.form("profile_form"):
         "Design & Creative": ["Photoshop", "Illustrator", "Figma", "Sketch", "Canva", "Video Editing"]
     }
     
-    current_skills = user_data.get('skills', '').split(',') if user_data.get('skills') else []
+    # Handle skills with proper data validation
+    skills_data = user_data.get('skills', '')
+    if pd.isna(skills_data) or not isinstance(skills_data, str):
+        skills_data = ''
+    current_skills = skills_data.split(',') if skills_data else []
     current_skills = [s.strip() for s in current_skills if s.strip()]
     
     all_skills = []
@@ -129,15 +137,25 @@ with st.form("profile_form"):
         index=style_options.index(current_learning_style)
     )
     
+    # Handle short_term_goals with proper validation
+    short_term_data = user_data.get('short_term_goals', '')
+    if pd.isna(short_term_data) or not isinstance(short_term_data, str):
+        short_term_data = ''
+    
     short_term_goals = st.text_area(
         "Short-term goals (3-6 months)",
-        value=user_data.get('short_term_goals', ''),
+        value=short_term_data,
         placeholder="What do you want to achieve in the next 3-6 months?"
     )
     
+    # Handle long_term_goals with proper validation
+    long_term_data = user_data.get('long_term_goals', '')
+    if pd.isna(long_term_data) or not isinstance(long_term_data, str):
+        long_term_data = ''
+    
     long_term_goals = st.text_area(
         "Long-term goals (1-2 years)",
-        value=user_data.get('long_term_goals', ''),
+        value=long_term_data,
         placeholder="What are your long-term career or learning objectives?"
     )
     

@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from utils.auth import init_session_state, require_auth, is_authenticated
 from utils.gemini_client import chat_with_mentor
 from utils.data_manager import save_chat_message, load_chat_history

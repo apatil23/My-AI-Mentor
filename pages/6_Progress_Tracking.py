@@ -77,10 +77,20 @@ if not interactions.empty or not chat_history.empty:
                 timestamp_date = pd.to_datetime(interaction['timestamp']).date() if pd.notna(interaction['timestamp']) else datetime.now().date()
             except:
                 timestamp_date = datetime.now().date()
+            
+            # Handle interaction_type and details properly
+            interaction_type = interaction['interaction_type']
+            if pd.isna(interaction_type) or not isinstance(interaction_type, str):
+                interaction_type = 'unknown'
+            
+            details = interaction['details']
+            if pd.isna(details) or not isinstance(details, str):
+                details = 'No details'
+            
             timeline_data.append({
                 'date': timestamp_date,
-                'activity': str(interaction['interaction_type']).replace('_', ' ').title(),
-                'details': interaction['details'],
+                'activity': str(interaction_type).replace('_', ' ').title(),
+                'details': details,
                 'type': 'interaction'
             })
     
@@ -203,23 +213,31 @@ if not progress_entries.empty:
             ["All"] + list(progress_entries['progress_type'].unique())
         )
     
-    # Apply filters
+    # Apply filters with proper data handling
     filtered_entries = progress_entries.copy()
     
-    # Date filter
-    filtered_entries['date'] = pd.to_datetime(filtered_entries['timestamp']).dt.date
-    filtered_entries = filtered_entries[filtered_entries['date'] >= date_filter]
+    if not filtered_entries.empty:
+        # Date filter with error handling
+        try:
+            filtered_entries['date'] = pd.to_datetime(filtered_entries['timestamp']).dt.date
+            filtered_entries = filtered_entries[filtered_entries['date'] >= date_filter]
+        except:
+            # If date parsing fails, use current date
+            filtered_entries['date'] = datetime.now().date()
+        
+        # Type filter
+        if type_filter != "All":
+            filtered_entries = filtered_entries[filtered_entries['progress_type'] == type_filter]
     
-    # Type filter
-    if type_filter != "All":
-        filtered_entries = filtered_entries[filtered_entries['progress_type'] == type_filter]
-    
-    if len(filtered_entries) > 0:
+    if not filtered_entries.empty:
         # Progress visualization
         st.subheader("📈 Learning Patterns")
         
-        # Progress over time
-        daily_progress = filtered_entries.groupby('date').size().reset_index(name='entries')
+        # Progress over time with error handling
+        try:
+            daily_progress = filtered_entries.groupby('date').size().reset_index(name='entries')
+        except:
+            daily_progress = pd.DataFrame({'date': [datetime.now().date()], 'entries': [1]})
         
         if len(daily_progress) > 1:
             fig = px.line(
@@ -231,8 +249,12 @@ if not progress_entries.empty:
             )
             st.plotly_chart(fig, use_container_width=True)
         
-        # Activity type distribution
-        type_counts = filtered_entries['progress_type'].value_counts()
+        # Activity type distribution with error handling
+        try:
+            type_counts = filtered_entries['progress_type'].value_counts()
+        except:
+            type_counts = pd.Series([1], index=['Unknown'])
+        
         if len(type_counts) > 1:
             fig = px.pie(
                 values=type_counts.values,
@@ -247,7 +269,11 @@ if not progress_entries.empty:
             "2 hours": 2, "3 hours": 3, "4+ hours": 4
         }
         
-        filtered_entries['time_hours'] = filtered_entries['time_spent'].map(time_mapping).fillna(1.0)
+        # Time investment analysis with error handling
+        try:
+            filtered_entries['time_hours'] = filtered_entries['time_spent'].map(time_mapping).fillna(1.0)
+        except:
+            filtered_entries['time_hours'] = 1.0
         total_time = filtered_entries['time_hours'].sum()
         avg_time = filtered_entries['time_hours'].mean()
         

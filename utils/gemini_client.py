@@ -20,17 +20,25 @@ def generate_project_suggestions(
     """Generate personalized project suggestions using Gemini API."""
     
     try:
-        # Build context about the user
+        # Build context about the user with proper data validation
+        import pandas as pd
+        
+        def safe_get(data, key, default):
+            value = data.get(key, default)
+            if pd.isna(value) or not isinstance(value, str):
+                return default
+            return value
+        
         user_context = f"""
         User Profile:
-        - Name: {user_data.get('name', 'User')}
-        - Experience Level: {user_data.get('experience_level', 'Beginner')}
-        - Interests: {user_data.get('interests', 'Not specified')}
-        - Current Skills: {user_data.get('skills', 'Not specified')}
-        - Time Commitment: {user_data.get('time_commitment', 'Not specified')}
-        - Learning Style: {user_data.get('learning_style', 'Mixed approach')}
-        - Short-term Goals: {user_data.get('short_term_goals', 'Not specified')}
-        - Long-term Goals: {user_data.get('long_term_goals', 'Not specified')}
+        - Name: {safe_get(user_data, 'name', 'User')}
+        - Experience Level: {safe_get(user_data, 'experience_level', 'Beginner')}
+        - Interests: {safe_get(user_data, 'interests', 'Not specified')}
+        - Current Skills: {safe_get(user_data, 'skills', 'Not specified')}
+        - Time Commitment: {safe_get(user_data, 'time_commitment', 'Not specified')}
+        - Learning Style: {safe_get(user_data, 'learning_style', 'Mixed approach')}
+        - Short-term Goals: {safe_get(user_data, 'short_term_goals', 'Not specified')}
+        - Long-term Goals: {safe_get(user_data, 'long_term_goals', 'Not specified')}
         """
         
         prompt = f"""
@@ -95,16 +103,25 @@ def generate_learning_roadmap(roadmap_data: Dict[str, Any]) -> Dict[str, Any]:
     try:
         user_data = roadmap_data['user_data']
         
+        # Safe data extraction with validation
+        import pandas as pd
+        
+        def safe_get(data, key, default):
+            value = data.get(key, default)
+            if pd.isna(value) or not isinstance(value, str):
+                return default
+            return value
+        
         prompt = f"""
         You are an expert learning strategist. Create a comprehensive, personalized learning roadmap for the following user and goal.
 
         User Profile:
-        - Name: {user_data.get('name', 'User')}
-        - Experience Level: {user_data.get('experience_level', 'Beginner')}
-        - Current Skills: {user_data.get('skills', 'Not specified')}
-        - Interests: {user_data.get('interests', 'Not specified')}
-        - Learning Style: {roadmap_data.get('learning_style', 'Mixed approach')}
-        - Time Commitment: {roadmap_data.get('time_per_week', '1-3 hours')} per week
+        - Name: {safe_get(user_data, 'name', 'User')}
+        - Experience Level: {safe_get(user_data, 'experience_level', 'Beginner')}
+        - Current Skills: {safe_get(user_data, 'skills', 'Not specified')}
+        - Interests: {safe_get(user_data, 'interests', 'Not specified')}
+        - Learning Style: {safe_get(roadmap_data, 'learning_style', 'Mixed approach')}
+        - Time Commitment: {safe_get(roadmap_data, 'time_per_week', '1-3 hours')} per week
 
         Learning Goal: {roadmap_data.get('goal', '')}
         Timeline: {roadmap_data.get('timeline', '3 months')}
@@ -163,12 +180,15 @@ def chat_with_mentor(context: Dict[str, Any]) -> str:
         chat_history = context.get('chat_history', [])
         current_message = context['current_message']
         
-        # Build conversation context
+        # Build conversation context with data validation
+        import pandas as pd
+        
         conversation_context = ""
         if chat_history:
             conversation_context = "\n".join([
-                f"{'User' if msg['role'] == 'user' else 'Mentor'}: {msg['content']}"
+                f"{'User' if msg['role'] == 'user' else 'Mentor'}: {str(msg['content']) if not pd.isna(msg.get('content', '')) else 'No content'}"
                 for msg in chat_history[-5:]  # Last 5 messages
+                if msg and isinstance(msg, dict)
             ])
         
         system_prompt = f"""

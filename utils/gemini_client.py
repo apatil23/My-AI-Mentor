@@ -191,15 +191,23 @@ def chat_with_mentor(context: Dict[str, Any]) -> str:
                 if msg and isinstance(msg, dict)
             ])
         
+        # Safe data extraction for user profile
+        def safe_get_profile(data, key, default):
+            import pandas as pd
+            value = data.get(key, default)
+            if pd.isna(value) or not isinstance(value, str) or value == '':
+                return default
+            return value
+        
         system_prompt = f"""
         You are an expert AI learning mentor and career advisor. You help students and professionals learn new skills, solve problems, and advance their careers in technology.
 
         User Profile:
-        - Name: {user_data.get('name', 'User')}
-        - Experience Level: {user_data.get('experience_level', 'Beginner')}
-        - Skills: {user_data.get('skills', 'Not specified')}
-        - Interests: {user_data.get('interests', 'Not specified')}
-        - Goals: {user_data.get('short_term_goals', 'Not specified')}
+        - Name: {safe_get_profile(user_data, 'name', 'User')}
+        - Experience Level: {safe_get_profile(user_data, 'experience_level', 'Beginner')}
+        - Skills: {safe_get_profile(user_data, 'skills', 'Not specified')}
+        - Interests: {safe_get_profile(user_data, 'interests', 'Not specified')}
+        - Goals: {safe_get_profile(user_data, 'short_term_goals', 'Not specified')}
 
         Your personality and approach:
         - Friendly, encouraging, and supportive
@@ -208,6 +216,8 @@ def chat_with_mentor(context: Dict[str, Any]) -> str:
         - Knowledgeable about current technology trends
         - Good at breaking down complex concepts
         - Motivational and inspiring
+        - ALWAYS provide helpful responses to any learning-related question
+        - Never refuse to answer questions about projects, coding, or technology
 
         Guidelines for responses:
         1. Be conversational and personable
@@ -215,9 +225,11 @@ def chat_with_mentor(context: Dict[str, Any]) -> str:
         3. Ask clarifying questions when needed
         4. Suggest concrete next steps
         5. Reference the user's profile and goals when relevant
-        6. Keep responses focused and not too lengthy
+        6. Keep responses focused and helpful
         7. Include examples and analogies when helpful
         8. Be encouraging about their progress and potential
+        9. Answer ALL questions related to learning, projects, coding, and technology
+        10. If you need more context, ask specific follow-up questions
 
         Recent conversation context:
         {conversation_context}
@@ -238,15 +250,31 @@ def chat_with_mentor(context: Dict[str, Any]) -> str:
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 temperature=0.7,
-                max_output_tokens=1000
+                max_output_tokens=1500
             )
         )
         
-        return response.text or "I apologize, but I'm having trouble processing your message right now. Could you please try rephrasing your question?"
+        # Better response handling
+        if response and response.text:
+            return response.text.strip()
+        else:
+            logging.warning(f"Empty response from Gemini for message: {current_message[:100]}")
+            return "I understand you're asking about that topic. Let me help you with that! Could you provide a bit more detail about what specifically you'd like to know or what challenge you're facing?"
     
     except Exception as e:
         logging.error(f"Error in chat with mentor: {str(e)}")
-        return "I'm experiencing some technical difficulties right now. Please try again in a moment, or check your API key configuration."
+        # Try a simpler approach if the complex one fails
+        try:
+            simple_response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=f"You are a helpful learning mentor. Answer this question: {current_message}"
+            )
+            if simple_response and simple_response.text:
+                return simple_response.text.strip()
+        except:
+            pass
+        
+        return f"I'm here to help with your question: '{current_message[:100]}'. Could you please try asking in a different way? I'm ready to assist with any learning, coding, or project-related topics!"
 
 def analyze_learning_progress(progress_data: Dict[str, Any]) -> Dict[str, Any]:
     """Analyze user's learning progress and provide insights."""

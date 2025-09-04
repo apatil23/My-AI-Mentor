@@ -251,8 +251,8 @@ if st.session_state.get('current_roadmap') or st.session_state.get('viewing_road
                 
                 if phase.get('milestones'):
                     st.markdown("**Milestones:**")
-                    for milestone in phase['milestones']:
-                        completed = st.checkbox(f"{milestone}", key=f"milestone_{i}_{milestone[:20]}")
+                    for j, milestone in enumerate(phase['milestones']):
+                        completed = st.checkbox(f"{milestone}", key=f"milestone_phase_{i}_item_{j}")
                         if completed:
                             st.success("✅ Completed!")
                 

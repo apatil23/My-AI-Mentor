@@ -130,6 +130,83 @@ if generate_button or st.session_state.get('show_projects'):
         
         projects = st.session_state.generated_projects
         
+        # Video recommendations based on focus area
+        focus_area_videos = {
+            "Programming & Software Development": {
+                "title": "Complete Python Programming Course",
+                "video_id": "rfscVS0vtbw",
+                "description": "Full Python course for beginners to advanced"
+            },
+            "Data Science & Analytics": {
+                "title": "Data Science Full Course",
+                "video_id": "ua-CiDNNj30",
+                "description": "Complete data science tutorial with Python"
+            },
+            "Web Development": {
+                "title": "Full Stack Web Development Course",
+                "video_id": "nu_pCVPKzTk",
+                "description": "Complete web development bootcamp"
+            },
+            "Mobile App Development": {
+                "title": "React Native Full Course",
+                "video_id": "0-S5a0eXPoc",
+                "description": "Build mobile apps with React Native"
+            },
+            "Machine Learning & AI": {
+                "title": "Machine Learning Full Course",
+                "video_id": "GwIo3gDZCVQ",
+                "description": "Complete machine learning course"
+            },
+            "Game Development": {
+                "title": "Unity Game Development Tutorial",
+                "video_id": "XtQMytORBmM",
+                "description": "Learn game development with Unity"
+            },
+            "UI/UX Design": {
+                "title": "UI/UX Design Complete Course",
+                "video_id": "c9Wg6Cb_YlU",
+                "description": "Master UI/UX design principles"
+            },
+            "Digital Marketing": {
+                "title": "Digital Marketing Full Course",
+                "video_id": "bixR-KIJKYM",
+                "description": "Complete digital marketing strategy"
+            },
+            "Business & Entrepreneurship": {
+                "title": "Entrepreneurship and Business",
+                "video_id": "ZoqgAy3h4OM",
+                "description": "Learn business fundamentals"
+            },
+            "Creative Arts": {
+                "title": "Digital Art and Design Course",
+                "video_id": "AdKuh5_NzpI",
+                "description": "Creative digital art techniques"
+            },
+            "Science & Research": {
+                "title": "Research Methodology Course",
+                "video_id": "wbhXHKHPmXs",
+                "description": "Scientific research methods"
+            }
+        }
+        
+        # Show recommended video for the focus area
+        if focus_area != "Based on my profile" and focus_area in focus_area_videos:
+            st.subheader(f"📺 Recommended Learning Video for {focus_area}")
+            
+            video_info = focus_area_videos[focus_area]
+            
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                # Embed YouTube video
+                st.video(f"https://www.youtube.com/watch?v={video_info['video_id']}")
+            
+            with col2:
+                st.markdown(f"**🎬 {video_info['title']}**")
+                st.markdown(f"📖 {video_info['description']}")
+                st.markdown("💡 *This video provides foundational knowledge for your selected focus area*")
+            
+            st.markdown("---")
+        
         for i, project in enumerate(projects, 1):
             with st.container():
                 st.markdown(f"### 🚀 Project {i}: {project.get('title', f'Project {i}')}")

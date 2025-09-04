@@ -49,6 +49,28 @@ def main():
     
     st.markdown('</div>', unsafe_allow_html=True)
     
+    # Demo video section
+    st.markdown("## 🎬 See It In Action")
+    
+    demo_col1, demo_col2 = st.columns([2, 1])
+    with demo_col1:
+        st.video("https://www.youtube.com/watch?v=VqgUkExPvLY")
+    
+    with demo_col2:
+        st.markdown("""
+        **🚀 AI-Powered Learning Demo**
+        
+        Watch how our intelligent mentor system helps learners:
+        - Get personalized project recommendations
+        - Create custom learning roadmaps  
+        - Receive 24/7 AI guidance and support
+        - Track progress with detailed analytics
+        
+        *Experience the future of personalized education!*
+        """)
+    
+    st.markdown("---")
+    
     # Features section
     st.markdown("## ✨ Key Features")
     

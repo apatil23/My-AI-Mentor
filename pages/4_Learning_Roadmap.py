@@ -193,6 +193,39 @@ if st.session_state.get('current_roadmap') or st.session_state.get('viewing_road
     if roadmap and roadmap.get('overview'):
         st.markdown(f"**Overview:** {roadmap['overview']}")
     
+    # Add learning videos section for roadmaps
+    if roadmap and roadmap.get('title'):
+        st.subheader("📺 Recommended Learning Videos")
+        
+        # Video recommendations for roadmap topics
+        learning_videos = [
+            {
+                "title": "Study Tips for Effective Learning",
+                "video_id": "IlU-zDU6aQ0",
+                "description": "Master effective study techniques"
+            },
+            {
+                "title": "Project Management Basics",
+                "video_id": "wbhXHKHPmXs",
+                "description": "Learn to manage your learning projects"
+            },
+            {
+                "title": "Goal Setting and Achievement",
+                "video_id": "TQMbvJNRpLE",
+                "description": "Set and achieve your learning goals"
+            }
+        ]
+        
+        video_cols = st.columns(len(learning_videos))
+        for i, video in enumerate(learning_videos):
+            with video_cols[i]:
+                with st.container():
+                    st.markdown(f"**{video['title']}**")
+                    st.video(f"https://www.youtube.com/watch?v={video['video_id']}")
+                    st.caption(video['description'])
+        
+        st.markdown("---")
+    
     # Display phases/milestones
     if roadmap and roadmap.get('phases'):
         st.subheader("📋 Learning Phases")

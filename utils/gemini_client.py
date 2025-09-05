@@ -83,19 +83,103 @@ def generate_project_suggestions(
         )
         
         if response.text:
-            projects_data = json.loads(response.text)
+            try:
+                projects_data = json.loads(response.text)
+                
+                # Ensure we return a list
+                if isinstance(projects_data, dict):
+                    projects_data = [projects_data]
+                
+                # Validate that each project has required fields
+                validated_projects = []
+                for i, project in enumerate(projects_data):
+                    if isinstance(project, dict):
+                        # Ensure all required fields exist
+                        validated_project = {
+                            'title': project.get('title', f'Learning Project {i+1}'),
+                            'description': project.get('description', 'A hands-on project to develop your skills and apply what you\'ve learned.'),
+                            'objectives': project.get('objectives', project.get('learning_objectives', ['Learn new skills', 'Apply knowledge practically', 'Build portfolio project'])),
+                            'technologies': project.get('technologies', ['Various tools and frameworks']),
+                            'features': project.get('features', project.get('key_features', ['Core functionality', 'User interface', 'Data handling'])),
+                            'timeline': project.get('timeline', timeline),
+                            'difficulty': project.get('difficulty', difficulty_level),
+                            'resources': project.get('resources', ['Online tutorials', 'Documentation', 'Community forums'])
+                        }
+                        validated_projects.append(validated_project)
+                    else:
+                        # If project is not a dict, create a basic project structure
+                        validated_projects.append({
+                            'title': f'Learning Project {i+1}',
+                            'description': 'A hands-on project to develop your skills and apply what you\'ve learned.',
+                            'objectives': ['Learn new skills', 'Apply knowledge practically', 'Build portfolio project'],
+                            'technologies': ['Various tools and frameworks'],
+                            'features': ['Core functionality', 'User interface', 'Data handling'],
+                            'timeline': timeline,
+                            'difficulty': difficulty_level,
+                            'resources': ['Online tutorials', 'Documentation', 'Community forums']
+                        })
+                
+                return validated_projects if validated_projects else []
             
-            # Ensure we return a list
-            if isinstance(projects_data, dict):
-                projects_data = [projects_data]
-            
-            return projects_data
+            except json.JSONDecodeError:
+                logging.warning(f"Failed to parse JSON response: {response.text[:200]}...")
+                # Return fallback projects if JSON parsing fails
+                return create_fallback_projects(num_projects, focus_area, difficulty_level, timeline)
         
-        return []
+        return create_fallback_projects(num_projects, focus_area, difficulty_level, timeline)
     
     except Exception as e:
         logging.error(f"Error generating project suggestions: {str(e)}")
-        return []
+        return create_fallback_projects(num_projects, focus_area, difficulty_level, timeline)
+
+def create_fallback_projects(num_projects: int, focus_area: str, difficulty_level: str, timeline: str) -> List[Dict[str, Any]]:
+    """Create fallback projects when API fails."""
+    base_projects = {
+        "Programming & Software Development": {
+            'title': 'Personal Task Manager Application',
+            'description': 'Build a comprehensive task management app with user authentication, task creation, editing, and organization features.',
+            'technologies': ['Python/JavaScript', 'Database (SQLite/PostgreSQL)', 'Web Framework', 'HTML/CSS'],
+            'features': ['User registration/login', 'Create and edit tasks', 'Task categories and priorities', 'Due date reminders', 'Search and filter functionality']
+        },
+        "Web Development": {
+            'title': 'Interactive Portfolio Website',
+            'description': 'Create a modern, responsive portfolio website showcasing your projects and skills with interactive elements.',
+            'technologies': ['HTML5', 'CSS3', 'JavaScript', 'React/Vue.js', 'Git'],
+            'features': ['Responsive design', 'Project showcase', 'Contact form', 'Blog section', 'Smooth animations']
+        },
+        "Data Science & Analytics": {
+            'title': 'Data Visualization Dashboard',
+            'description': 'Build an interactive dashboard that analyzes and visualizes real-world datasets with meaningful insights.',
+            'technologies': ['Python', 'Pandas', 'Plotly/Matplotlib', 'Streamlit/Dash', 'Jupyter Notebooks'],
+            'features': ['Data cleaning and preprocessing', 'Interactive charts', 'Filter and search capabilities', 'Export functionality', 'Statistical analysis']
+        },
+        "Mobile App Development": {
+            'title': 'Mobile Expense Tracker',
+            'description': 'Develop a mobile app to track daily expenses with categorization, budgeting, and spending analysis features.',
+            'technologies': ['React Native/Flutter', 'Mobile Database', 'API Integration', 'Push Notifications'],
+            'features': ['Expense logging', 'Category management', 'Budget tracking', 'Spending reports', 'Backup and sync']
+        }
+    }
+    
+    fallback_projects = []
+    for i in range(num_projects):
+        # Use focus area specific project or default
+        if focus_area in base_projects:
+            base_project = base_projects[focus_area].copy()
+        else:
+            base_project = base_projects["Programming & Software Development"].copy()
+        
+        base_project.update({
+            'title': f"{base_project['title']} {i+1}" if i > 0 else base_project['title'],
+            'objectives': ['Learn practical skills', 'Build portfolio project', 'Apply best practices'],
+            'timeline': timeline,
+            'difficulty': difficulty_level,
+            'resources': ['Official documentation', 'Online tutorials', 'Community support']
+        })
+        
+        fallback_projects.append(base_project)
+    
+    return fallback_projects
 
 def generate_learning_roadmap(roadmap_data: Dict[str, Any]) -> Dict[str, Any]:
     """Generate a personalized learning roadmap using Gemini API."""

@@ -425,33 +425,57 @@ def chat_with_mentor(context: Dict[str, Any]) -> str:
         - Goals: {safe_get_profile(user_data, 'short_term_goals', 'Not specified')}
 
         Your personality and approach:
-        - Friendly, encouraging, and supportive
+        - Friendly, encouraging, and supportive mentor
         - Patient and understanding of different learning paces
-        - Practical and focused on actionable advice
-        - Knowledgeable about current technology trends
-        - Good at breaking down complex concepts
-        - Motivational and inspiring
-        - ALWAYS provide helpful responses to any learning-related question
-        - Never refuse to answer questions about projects, coding, or technology
+        - Comprehensive and detailed in explanations
+        - Knowledgeable about current technology trends and career paths
+        - Good at breaking down complex concepts into actionable steps
+        - Motivational and inspiring with real-world examples
+        - ALWAYS provide complete, detailed responses
+        - Never refuse to answer questions about projects, coding, technology, or careers
+        - Provide thorough career guidance with specific job titles, responsibilities, and growth paths
 
         Guidelines for responses:
-        1. Be conversational and personable
-        2. Provide specific, actionable advice
-        3. Ask clarifying questions when needed
-        4. Suggest concrete next steps
+        1. Always provide COMPLETE responses - never cut off mid-thought
+        2. Give comprehensive, detailed answers with specific examples
+        3. For career questions, provide:
+           - Specific job titles and roles
+           - Typical responsibilities and daily tasks
+           - Required skills and technologies
+           - Career progression paths
+           - Salary ranges when appropriate
+           - Companies that hire for these roles
+        4. Include actionable next steps and resources
         5. Reference the user's profile and goals when relevant
-        6. Keep responses focused and helpful
-        7. Include examples and analogies when helpful
-        8. Be encouraging about their progress and potential
-        9. Answer ALL questions related to learning, projects, coding, and technology
-        10. If you need more context, ask specific follow-up questions
+        6. Use bullet points and clear structure for complex information
+        7. Provide multiple options and perspectives
+        8. Include real-world examples and success stories
+        9. Be encouraging about their progress and potential
+        10. Always finish your thoughts completely
 
         Recent conversation context:
         {conversation_context}
 
         Current user message: {current_message}
 
-        Respond as a helpful mentor would, providing guidance, answering questions, and offering support for their learning journey.
+        CRITICAL INSTRUCTIONS FOR CAREER QUESTIONS:
+        When asked about careers or \"what career can I pursue\", provide a COMPLETE, comprehensive response including:
+        
+        1. **Introduction** - Acknowledge their question and the project's value
+        2. **Core Skills Built** - List 3-4 key skills the project develops
+        3. **Career Paths** (minimum 5-7 options):
+           • **Job Title** - Specific role name
+           • **Description** - What they do day-to-day
+           • **Requirements** - Skills and experience needed
+           • **Salary Range** - Typical compensation
+           • **Companies** - Where these roles exist
+           • **Growth Path** - Career progression
+        4. **Next Steps** - Actionable advice for each path
+        5. **Timeline** - How long to reach each role
+        
+        NEVER end career responses abruptly. Always complete all sections above.
+        
+        Respond as a comprehensive career mentor providing complete guidance.
         """
         
         response = client.models.generate_content(
@@ -465,16 +489,36 @@ def chat_with_mentor(context: Dict[str, Any]) -> str:
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 temperature=0.7,
-                max_output_tokens=1500
+                max_output_tokens=3000
             )
         )
         
-        # Better response handling
+        # Better response handling with completeness check
         if response and response.text:
-            return response.text.strip()
+            response_text = response.text.strip()
+            
+            # Check if response seems incomplete (ends abruptly)
+            if len(response_text) > 50 and not response_text.endswith(('.', '!', '?', ':', ';')):
+                # Response might be cut off, try to complete it
+                try:
+                    completion_prompt = f"Complete this response naturally: {response_text}"
+                    completion_response = client.models.generate_content(
+                        model="gemini-2.5-flash",
+                        contents=completion_prompt,
+                        config=types.GenerateContentConfig(
+                            temperature=0.3,
+                            max_output_tokens=1000
+                        )
+                    )
+                    if completion_response and completion_response.text:
+                        return response_text + " " + completion_response.text.strip()
+                except:
+                    pass  # If completion fails, return original response
+            
+            return response_text
         else:
             logging.warning(f"Empty response from Gemini for message: {current_message[:100]}")
-            return "I understand you're asking about that topic. Let me help you with that! Could you provide a bit more detail about what specifically you'd like to know or what challenge you're facing?"
+            return "I understand you're asking about that topic. Let me provide you with a comprehensive answer! Could you provide a bit more detail about what specifically you'd like to know or what challenge you're facing?"
     
     except Exception as e:
         logging.error(f"Error in chat with mentor: {str(e)}")

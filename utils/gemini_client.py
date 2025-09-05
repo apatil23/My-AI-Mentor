@@ -42,7 +42,7 @@ def generate_project_suggestions(
         """
         
         prompt = f"""
-        You are an expert learning mentor and project advisor. Based on the user profile below, generate {num_projects} personalized project suggestions.
+        You are an expert learning mentor and project advisor with deep knowledge of popular GitHub projects, industry standards, and real-world applications. Based on the user profile below, generate {num_projects} DIVERSE and UNIQUE personalized project suggestions.
 
         {user_context}
 
@@ -53,24 +53,46 @@ def generate_project_suggestions(
         - Timeline: {timeline}
         - Additional Requirements: {additional_requirements or 'None'}
 
+        IMPORTANT: Each project must be COMPLETELY DIFFERENT from the others. Draw inspiration from:
+        - Popular open-source projects on GitHub
+        - Real-world industry applications
+        - Trending technologies and tools
+        - Practical problems people face daily
+        - Creative and innovative solutions
+
         Please generate projects that:
-        1. Match the user's skill level and interests
-        2. Are achievable within the specified timeline
-        3. Provide clear learning outcomes
-        4. Include practical, hands-on experience
-        5. Are relevant to their career goals
+        1. Are UNIQUE and DIVERSE - no similar concepts or features
+        2. Match the user's skill level and interests
+        3. Are based on real-world, practical applications
+        4. Provide clear learning outcomes with specific technologies
+        5. Include modern, industry-relevant tools and frameworks
+        6. Are achievable within the specified timeline
+        7. Offer portfolio-worthy outcomes
 
         For each project, provide:
-        - Title: A clear, engaging project name
-        - Description: A comprehensive overview of the project
-        - Learning Objectives: 3-5 specific skills/concepts the user will learn
-        - Technologies: List of technologies, tools, and frameworks to be used
-        - Key Features: 4-6 main features or components to implement
-        - Timeline: Detailed breakdown of time estimates
-        - Difficulty: How challenging this project is for the user
-        - Resources: Helpful learning resources, tutorials, or documentation links
+        - title: A specific, engaging project name (not generic)
+        - description: Detailed overview explaining what the user will build and why it's useful
+        - objectives: 3-5 specific, measurable learning outcomes
+        - technologies: Specific tools, frameworks, and libraries (not generic terms)
+        - features: 4-6 distinct, implementable features that make the project useful
+        - timeline: {timeline}
+        - difficulty: {difficulty_level}
+        - resources: Specific learning resources, documentation, and tutorials
 
-        Return the response as a JSON array of project objects.
+        Examples of GOOD project diversity:
+        - A password manager CLI tool with encryption
+        - A real-time collaborative whiteboard app
+        - A machine learning-powered recommendation system
+        - A blockchain-based voting system
+        - An AR mobile app for interior design
+
+        Examples of BAD (too similar) projects:
+        - Task manager app
+        - Todo list application  
+        - Project tracking tool
+        (These are all task management variations)
+
+        Return ONLY a valid JSON array with NO additional text or formatting.
         """
         
         response = client.models.generate_content(
@@ -94,30 +116,21 @@ def generate_project_suggestions(
                 validated_projects = []
                 for i, project in enumerate(projects_data):
                     if isinstance(project, dict):
-                        # Ensure all required fields exist
+                        # Ensure all required fields exist with better defaults
                         validated_project = {
-                            'title': project.get('title', f'Learning Project {i+1}'),
-                            'description': project.get('description', 'A hands-on project to develop your skills and apply what you\'ve learned.'),
-                            'objectives': project.get('objectives', project.get('learning_objectives', ['Learn new skills', 'Apply knowledge practically', 'Build portfolio project'])),
-                            'technologies': project.get('technologies', ['Various tools and frameworks']),
-                            'features': project.get('features', project.get('key_features', ['Core functionality', 'User interface', 'Data handling'])),
+                            'title': project.get('title', f'Innovative {focus_area} Project {i+1}'),
+                            'description': project.get('description', f'A practical {focus_area.lower()} project designed to challenge your skills and create something meaningful for your portfolio.'),
+                            'objectives': project.get('objectives', project.get('learning_objectives', [f'Master {focus_area.lower()} fundamentals', 'Build real-world applicable skills', 'Create portfolio-worthy project', 'Learn industry best practices'])),
+                            'technologies': project.get('technologies', ['Python', 'JavaScript', 'Git', 'HTML/CSS']),
+                            'features': project.get('features', project.get('key_features', [f'Core {focus_area.lower()} functionality', 'User-friendly interface', 'Data management system', 'Performance optimization'])),
                             'timeline': project.get('timeline', timeline),
                             'difficulty': project.get('difficulty', difficulty_level),
-                            'resources': project.get('resources', ['Online tutorials', 'Documentation', 'Community forums'])
+                            'resources': project.get('resources', ['Official documentation', 'Online tutorials', 'GitHub examples', 'Stack Overflow'])
                         }
                         validated_projects.append(validated_project)
                     else:
-                        # If project is not a dict, create a basic project structure
-                        validated_projects.append({
-                            'title': f'Learning Project {i+1}',
-                            'description': 'A hands-on project to develop your skills and apply what you\'ve learned.',
-                            'objectives': ['Learn new skills', 'Apply knowledge practically', 'Build portfolio project'],
-                            'technologies': ['Various tools and frameworks'],
-                            'features': ['Core functionality', 'User interface', 'Data handling'],
-                            'timeline': timeline,
-                            'difficulty': difficulty_level,
-                            'resources': ['Online tutorials', 'Documentation', 'Community forums']
-                        })
+                        # If project is not a dict, use a fallback project from our comprehensive pool
+                        validated_projects.append(create_fallback_projects(1, focus_area, difficulty_level, timeline)[0])
                 
                 return validated_projects if validated_projects else []
             
@@ -133,53 +146,171 @@ def generate_project_suggestions(
         return create_fallback_projects(num_projects, focus_area, difficulty_level, timeline)
 
 def create_fallback_projects(num_projects: int, focus_area: str, difficulty_level: str, timeline: str) -> List[Dict[str, Any]]:
-    """Create fallback projects when API fails."""
-    base_projects = {
-        "Programming & Software Development": {
-            'title': 'Personal Task Manager Application',
-            'description': 'Build a comprehensive task management app with user authentication, task creation, editing, and organization features.',
-            'technologies': ['Python/JavaScript', 'Database (SQLite/PostgreSQL)', 'Web Framework', 'HTML/CSS'],
-            'features': ['User registration/login', 'Create and edit tasks', 'Task categories and priorities', 'Due date reminders', 'Search and filter functionality']
-        },
-        "Web Development": {
-            'title': 'Interactive Portfolio Website',
-            'description': 'Create a modern, responsive portfolio website showcasing your projects and skills with interactive elements.',
-            'technologies': ['HTML5', 'CSS3', 'JavaScript', 'React/Vue.js', 'Git'],
-            'features': ['Responsive design', 'Project showcase', 'Contact form', 'Blog section', 'Smooth animations']
-        },
-        "Data Science & Analytics": {
-            'title': 'Data Visualization Dashboard',
-            'description': 'Build an interactive dashboard that analyzes and visualizes real-world datasets with meaningful insights.',
-            'technologies': ['Python', 'Pandas', 'Plotly/Matplotlib', 'Streamlit/Dash', 'Jupyter Notebooks'],
-            'features': ['Data cleaning and preprocessing', 'Interactive charts', 'Filter and search capabilities', 'Export functionality', 'Statistical analysis']
-        },
-        "Mobile App Development": {
-            'title': 'Mobile Expense Tracker',
-            'description': 'Develop a mobile app to track daily expenses with categorization, budgeting, and spending analysis features.',
-            'technologies': ['React Native/Flutter', 'Mobile Database', 'API Integration', 'Push Notifications'],
-            'features': ['Expense logging', 'Category management', 'Budget tracking', 'Spending reports', 'Backup and sync']
-        }
+    """Create diverse, realistic projects inspired by popular GitHub and industry projects."""
+    
+    # Comprehensive project pool organized by category
+    project_pool = {
+        "Programming & Software Development": [
+            {
+                'title': 'Password Manager CLI Tool',
+                'description': 'Build a secure command-line password manager with encryption, password generation, and secure storage using industry-standard cryptography.',
+                'technologies': ['Python', 'Cryptography', 'SQLite', 'Argparse', 'Pytest'],
+                'features': ['AES encryption', 'Master password authentication', 'Password generation', 'Secure clipboard integration', 'Import/export functionality'],
+                'objectives': ['Learn cryptography basics', 'Master CLI development', 'Understand secure coding practices', 'Build testing workflows']
+            },
+            {
+                'title': 'Real-time Chat Application',
+                'description': 'Create a multi-room chat application with real-time messaging, user authentication, and file sharing capabilities using WebSocket technology.',
+                'technologies': ['Node.js', 'Socket.io', 'Express', 'MongoDB', 'JWT Authentication'],
+                'features': ['Real-time messaging', 'Multiple chat rooms', 'File sharing', 'User status indicators', 'Message history'],
+                'objectives': ['Master WebSocket programming', 'Learn real-time communication', 'Implement user authentication', 'Handle file uploads']
+            },
+            {
+                'title': 'URL Shortener Service',
+                'description': 'Build a URL shortening service like bit.ly with custom short codes, analytics, expiration dates, and QR code generation.',
+                'technologies': ['Python/Flask', 'Redis', 'PostgreSQL', 'Docker', 'Nginx'],
+                'features': ['Custom short codes', 'Click analytics', 'QR code generation', 'Bulk URL processing', 'API rate limiting'],
+                'objectives': ['Learn system design patterns', 'Implement caching strategies', 'Build RESTful APIs', 'Deploy with containers']
+            }
+        ],
+        "Web Development": [
+            {
+                'title': 'E-commerce Product Catalog',
+                'description': 'Develop a modern e-commerce frontend with product search, filtering, shopping cart, and checkout flow using modern frameworks.',
+                'technologies': ['React', 'TypeScript', 'Tailwind CSS', 'Stripe API', 'Context API'],
+                'features': ['Product search and filtering', 'Shopping cart management', 'User reviews system', 'Wishlist functionality', 'Payment integration'],
+                'objectives': ['Master React hooks and context', 'Learn payment integration', 'Implement responsive design', 'Handle complex state management']
+            },
+            {
+                'title': 'Social Media Dashboard',
+                'description': 'Create a comprehensive dashboard to manage multiple social media accounts with post scheduling, analytics, and content management.',
+                'technologies': ['Vue.js', 'Node.js', 'Chart.js', 'Social Media APIs', 'MongoDB'],
+                'features': ['Multi-platform posting', 'Content calendar', 'Analytics visualization', 'Hashtag suggestions', 'Team collaboration'],
+                'objectives': ['Integrate multiple APIs', 'Build data visualization', 'Implement scheduling systems', 'Learn Vue.js ecosystem']
+            },
+            {
+                'title': 'Recipe Sharing Platform',
+                'description': 'Build a community-driven recipe sharing platform with user-generated content, ratings, meal planning, and shopping list generation.',
+                'technologies': ['Next.js', 'Prisma', 'PostgreSQL', 'AWS S3', 'NextAuth.js'],
+                'features': ['Recipe submission and editing', 'User ratings and reviews', 'Meal planning calendar', 'Shopping list generation', 'Nutritional information'],
+                'objectives': ['Learn full-stack Next.js', 'Implement file uploads', 'Build user-generated content systems', 'Create complex data relationships']
+            }
+        ],
+        "Data Science & Analytics": [
+            {
+                'title': 'Stock Market Analysis Tool',
+                'description': 'Build a comprehensive stock analysis tool with real-time data, technical indicators, portfolio tracking, and predictive modeling.',
+                'technologies': ['Python', 'Pandas', 'Plotly', 'yfinance', 'Scikit-learn', 'Streamlit'],
+                'features': ['Real-time stock data', 'Technical indicators', 'Portfolio performance tracking', 'Risk analysis', 'Price prediction models'],
+                'objectives': ['Learn financial data analysis', 'Implement machine learning models', 'Build interactive visualizations', 'Handle real-time data streams']
+            },
+            {
+                'title': 'Customer Sentiment Analysis System',
+                'description': 'Create a system to analyze customer feedback from multiple sources using NLP techniques to extract sentiment and key insights.',
+                'technologies': ['Python', 'NLTK', 'Transformers', 'BeautifulSoup', 'PostgreSQL', 'FastAPI'],
+                'features': ['Multi-source data collection', 'Sentiment classification', 'Key phrase extraction', 'Trend analysis', 'Automated reporting'],
+                'objectives': ['Master NLP techniques', 'Learn web scraping', 'Implement ML pipelines', 'Build data processing workflows']
+            },
+            {
+                'title': 'Weather Data Analytics Platform',
+                'description': 'Develop a platform that collects, processes, and visualizes weather data with predictions, alerts, and historical trend analysis.',
+                'technologies': ['Python', 'Apache Airflow', 'PostgreSQL', 'Grafana', 'Weather APIs'],
+                'features': ['Automated data collection', 'Weather predictions', 'Alert system', 'Historical trend analysis', 'Geographic visualization'],
+                'objectives': ['Learn data pipeline architecture', 'Implement time series analysis', 'Build monitoring systems', 'Create geographic visualizations']
+            }
+        ],
+        "Mobile App Development": [
+            {
+                'title': 'Habit Tracking App',
+                'description': 'Build a mobile app for habit tracking with streaks, reminders, progress visualization, and social sharing features.',
+                'technologies': ['React Native', 'AsyncStorage', 'Push Notifications', 'Chart Libraries', 'Firebase'],
+                'features': ['Habit creation and tracking', 'Streak counters', 'Progress charts', 'Reminder notifications', 'Social sharing'],
+                'objectives': ['Learn mobile development patterns', 'Implement local storage', 'Handle push notifications', 'Build engaging user interfaces']
+            },
+            {
+                'title': 'Augmented Reality Plant Identifier',
+                'description': 'Create an AR mobile app that identifies plants using camera input, provides care instructions, and tracks plant collections.',
+                'technologies': ['Flutter', 'ARCore/ARKit', 'TensorFlow Lite', 'Plant API', 'SQLite'],
+                'features': ['Camera-based plant identification', 'AR overlay information', 'Care reminders', 'Plant collection tracker', 'Offline mode'],
+                'objectives': ['Learn AR development', 'Implement machine learning on mobile', 'Build camera functionality', 'Handle offline data sync']
+            },
+            {
+                'title': 'Fitness Challenge App',
+                'description': 'Develop a social fitness app where users can create challenges, track workouts, compete with friends, and share achievements.',
+                'technologies': ['Swift/Kotlin', 'HealthKit/Google Fit', 'Firebase', 'Push Notifications', 'Social APIs'],
+                'features': ['Workout tracking', 'Social challenges', 'Leaderboards', 'Progress sharing', 'Achievement system'],
+                'objectives': ['Integrate health APIs', 'Build social features', 'Implement real-time updates', 'Create gamification systems']
+            }
+        ],
+        "Machine Learning & AI": [
+            {
+                'title': 'Image Classification Web Service',
+                'description': 'Build a web service that classifies images using deep learning, with model training, API endpoints, and a user-friendly interface.',
+                'technologies': ['Python', 'TensorFlow', 'FastAPI', 'Docker', 'AWS/GCP', 'React'],
+                'features': ['Custom model training', 'REST API endpoints', 'Batch processing', 'Model versioning', 'Performance monitoring'],
+                'objectives': ['Learn deep learning frameworks', 'Build ML APIs', 'Deploy ML models', 'Handle model lifecycle']
+            },
+            {
+                'title': 'Chatbot with Natural Language Understanding',
+                'description': 'Create an intelligent chatbot that understands context, handles multiple intents, and provides personalized responses.',
+                'technologies': ['Python', 'spaCy', 'Rasa', 'PostgreSQL', 'WebSocket', 'Docker'],
+                'features': ['Intent recognition', 'Context awareness', 'Multi-turn conversations', 'Personalization', 'Analytics dashboard'],
+                'objectives': ['Learn NLP fundamentals', 'Build conversational AI', 'Implement context management', 'Create training pipelines']
+            }
+        ],
+        "Game Development": [
+            {
+                'title': '2D Platformer Game',
+                'description': 'Develop a complete 2D platformer game with levels, enemies, power-ups, and a level editor using modern game development tools.',
+                'technologies': ['Unity', 'C#', 'Tilemap System', 'Animation System', 'Audio System'],
+                'features': ['Character movement and physics', 'Enemy AI systems', 'Level progression', 'Power-up system', 'Level editor'],
+                'objectives': ['Learn game physics', 'Implement AI behaviors', 'Create game mechanics', 'Build user interfaces']
+            },
+            {
+                'title': 'Multiplayer Card Game',
+                'description': 'Build a real-time multiplayer card game with matchmaking, turn-based gameplay, and spectator mode.',
+                'technologies': ['Godot', 'WebSocket', 'Node.js', 'MongoDB', 'Game Networking'],
+                'features': ['Real-time multiplayer', 'Matchmaking system', 'Turn-based mechanics', 'Spectator mode', 'Replay system'],
+                'objectives': ['Learn network programming', 'Implement game state management', 'Build matchmaking logic', 'Handle real-time synchronization']
+            }
+        ]
     }
     
-    fallback_projects = []
-    for i in range(num_projects):
-        # Use focus area specific project or default
-        if focus_area in base_projects:
-            base_project = base_projects[focus_area].copy()
-        else:
-            base_project = base_projects["Programming & Software Development"].copy()
-        
-        base_project.update({
-            'title': f"{base_project['title']} {i+1}" if i > 0 else base_project['title'],
-            'objectives': ['Learn practical skills', 'Build portfolio project', 'Apply best practices'],
+    # Get projects for the focus area, with fallback to programming
+    available_projects = project_pool.get(focus_area, project_pool["Programming & Software Development"])
+    
+    # If we need more projects than available, include from other categories
+    selected_projects = []
+    if num_projects <= len(available_projects):
+        selected_projects = available_projects[:num_projects]
+    else:
+        selected_projects.extend(available_projects)
+        # Add projects from other categories to reach the requested number
+        remaining_needed = num_projects - len(available_projects)
+        all_other_projects = []
+        for category, projects in project_pool.items():
+            if category != focus_area:
+                all_other_projects.extend(projects)
+        selected_projects.extend(all_other_projects[:remaining_needed])
+    
+    # Finalize projects with timeline and difficulty
+    final_projects = []
+    for project in selected_projects:
+        final_project = project.copy()
+        final_project.update({
             'timeline': timeline,
             'difficulty': difficulty_level,
-            'resources': ['Official documentation', 'Online tutorials', 'Community support']
+            'resources': [
+                f"{project['technologies'][0]} Official Documentation",
+                f"GitHub repositories for {project['title'].lower().replace(' ', '-')}",
+                f"YouTube tutorials on {project['technologies'][1] if len(project['technologies']) > 1 else project['technologies'][0]}",
+                "Stack Overflow community",
+                "Medium articles and tech blogs"
+            ]
         })
-        
-        fallback_projects.append(base_project)
+        final_projects.append(final_project)
     
-    return fallback_projects
+    return final_projects
 
 def generate_learning_roadmap(roadmap_data: Dict[str, Any]) -> Dict[str, Any]:
     """Generate a personalized learning roadmap using Gemini API."""

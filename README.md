@@ -3,7 +3,7 @@
 AI Mentor is an **AI-powered learning platform** that helps users learn new skills by working on **guided, end-to-end projects**.  
 Unlike generic learning platforms, AI Mentor provides **step-by-step AI mentorship**, a **personalized learning roadmap**, and **real-world project guidance**.
 
-![App Demo](Demo.gif)
+![App Demo](/screenshots/Team%20Blue%20MVP_Recording%20(1).gif)
 ---
 
 ## 🚀 Features

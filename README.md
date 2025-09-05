@@ -1,135 +1,44 @@
-# AI Learning Mentor
+# 🎓 AI Mentor - Learn by Doing. Powered by AI.
 
-AI Learning Mentor is a personalized, AI-powered learning companion built with Streamlit. It helps users discover project ideas, create custom learning roadmaps, chat with an AI mentor, and track their progress—all in one place.
+AI Mentor is an **AI-powered learning platform** that helps users learn new skills by working on **guided, end-to-end projects**.  
+Unlike generic learning platforms, AI Mentor provides **step-by-step AI mentorship**, a **personalized learning roadmap**, and **real-world project guidance**.
 
+![App Demo](Demo.gif)
 ---
 
 ## 🚀 Features
 
-- **User Authentication:** Secure email/password login and registration.
-- **Profile Setup:** Capture experience, interests, skills, learning style, and goals.
-- **AI Project Suggestions:** Get diverse, personalized project ideas powered by Google Gemini.
-- **Learning Roadmaps:** Generate and manage step-by-step learning plans tailored to your goals.
-- **AI Chatbot Mentor:** 24/7 AI mentor for coding help, career advice, and learning support.
-- **Progress Tracking:** Log achievements, skills gained, and visualize your learning journey.
-- **Data Persistence:** All user data, interactions, and progress are stored in CSV files for easy management.
+- 🔑 **Authentication** – Login & Signup system (email-based)  
+- 🎯 **Personalized Roadmaps** – AI suggests projects tailored to your skills & goals  
+- 🤖 **AI Mentor Chat** – Get instant, project-specific help at every step  
+- 📊 **Progress Tracking** – Monitor your learning journey  
+- 🛠 **Hands-on Projects** – Build practical, portfolio-ready skills  
 
 ---
 
-## 🏗️ System Architecture
+## Usage Flow (UX)
 
-- **Frontend:** Streamlit multi-page app with responsive UI and custom styling.
-- **Backend:** 
-  - Google Gemini API for AI-powered suggestions and chat.
-  - Pandas for data manipulation and CSV storage.
-  - Custom authentication with SHA256 password hashing.
-- **Data Storage:** Local CSV files for users, roadmaps, interactions, chat history, and progress.
+- **Landing Page** — welcomes users and highlights key platform benefits.
+- **Signup / Login** — quick onboarding via email.
+- **Dashboard** — view your active project and access AI Mentor.
+- **AI Mentor Chat** — receive step-by-step guided help for your projects.
+- **Track Progress** — milestones complete with portfolio export options.
 
----
 
-## 📂 Project Structure
+## 🔮 Future Work
 
-```
-.
-├── app.py
-├── pages/
-│   ├── 1_Login.py
-│   ├── 2_Profile_Setup.py
-│   ├── 3_Project_Suggestions.py
-│   ├── 4_Learning_Roadmap.py
-│   ├── 5_Chatbot_Mentor.py
-│   └── 6_Progress_Tracking.py
-├── utils/
-│   ├── auth.py
-│   ├── gemini_client.py
-│   └── data_manager.py
-├── data/
-│   ├── users.csv
-│   ├── roadmaps.csv
-│   ├── interactions.csv
-│   ├── chat_history.csv
-│   └── progress.csv
-├── .streamlit/
-│   └── config.toml
-├── pyproject.toml
-└── replit.md
-```
+The vision of **AI Mentor App** is to evolve into a full-fledged, self-sustained learning ecosystem. Some key areas planned for future development include:
+
+- **Smart Project Suggestions**    
+  Recommend projects not only based on user interests but also aligned with the **skills they already have** and those they want to enhance.
+
+- **Integrated Learning Environment**  
+  Seamlessly embed resources such as **free cloud credits, big data services, and coding environments** directly into the platform, so learners can **learn and build in the same space** without external dependencies.
+
+- **AI-Powered Code Guidance**  
+  Expand the chatbot to accept **code snippets directly**, analyze them, and provide **next-step suggestions**.  
+  - Debugging and fixing issues  
+  - Offering optimization tips  
+  - Allowing learners to improve themselves with just a **simple AI prompt**  
 
 ---
-
-## ⚡ Getting Started
-
-### 1. **Install Dependencies**
-
-```sh
-pip install -r requirements.txt
-# or, if using pyproject.toml:
-pip install .
-```
-
-### 2. **Set Up Environment Variables**
-
-Set your Google Gemini API key:
-
-```sh
-export GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-### 3. **Run the App**
-
-```sh
-streamlit run app.py --server.port 5000
-```
-
-The app will be available at [http://localhost:5000](http://localhost:5000).
-
----
-
-## 🛠️ Configuration
-
-- **Streamlit config:** See [.streamlit/config.toml](.streamlit/config.toml)
-- **AI API:** Uses Google Gemini via the `google-genai` Python package.
-- **Data files:** All persistent data is stored in the `data/` directory as CSV files.
-
----
-
-## 🤖 AI Services
-
-- **Project Suggestions, Roadmaps, and Chat:** Powered by Google Gemini API.
-- **API Key Management:** Set via the `GEMINI_API_KEY` environment variable.
-
----
-
-## 📊 Data Storage
-
-- `users.csv` — User profiles and authentication
-- `roadmaps.csv` — Learning roadmaps
-- `interactions.csv` — User activity logs
-- `chat_history.csv` — AI mentor conversations
-- `progress.csv` — Progress and achievements
-
----
-
-## 📄 License
-
-This project is for educational and personal use. See [LICENSE](LICENSE) for details.
-
----
-
-## 🙌 Credits
-
-- Built with [Streamlit](https://streamlit.io/)
-- AI powered by [Google Gemini](https://ai.google.dev/)
-- Data managed with [pandas](https://pandas.pydata.org/)
-
----
-
-## 💡 Contributing
-
-Pull requests and suggestions are welcome! Please open an issue to discuss your ideas.
-
----
-
-## 📬 Contact
-
-For questions or support, open an issue or contact the
